@@ -34,57 +34,60 @@ maxVol = volRange[1]
 vol = 0
 volBar = 400
 volPer = 0
+area = 0
 while True:
     success, img = cap.read()
     
     # find hand
     img = detector.findHands(img)
-    lmList = detector.findPosition(img, draw=False)
-    if len(lmList) !=0:
+    lmList, bbox = detector.findPosition(img, draw=True)
+    if len(lmList) != 0:
         
         
         # filter based on size 
+        area = (bbox[2]-bbox[0])*(bbox[3]-bbox[1])//100
+        # print(area)
+        if 250 < area < 1000:
+            print("yes")
+            # find distance between index and thumb 
         
         
-        # find distance between index and thumb 
+            # convert volume 
+            # recuce resolution to make it snoother
+            # check fingers up
+            # if pinky is down set volume 
+            # drawings 
+            # frame rate 
         
         
-        # convert volume 
-        # recuce resolution to make it snoother
-        # check fingers up
-        # if pinky is down set volume 
-        # drawings 
-        # frame rate 
+            # print(lmList[4], lmList[8])
+        
+            x1, y1 = lmList[4][1], lmList[4][2]
+            x2, y2 = lmList[8][1], lmList[8][2]
+            cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
         
         
-        # print(lmList[4], lmList[8])
+            cv2.circle(img, (x1, y1), 15, (255, 0, 255), cv2.FILLED)
+            cv2.circle(img, (x2, y2), 15, (255, 0, 255), cv2.FILLED)
+            cv2.line(img, (x1, y1), (x2, y2), (255, 8, 255), 3)
+            cv2.circle(img, (cx, cy), 15, (255, 0, 255), cv2.FILLED)
         
-        x1, y1 = lmList[4][1], lmList[4][2]
-        x2, y2 = lmList[8][1], lmList[8][2]
-        cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
+            length = math.hypot(x2 - x1, y2 - y1)
+            # print(length)
         
-        
-        cv2.circle(img, (x1, y1), 15, (255, 0, 255), cv2.FILLED)
-        cv2.circle(img, (x2, y2), 15, (255, 0, 255), cv2.FILLED)
-        cv2.line(img, (x1, y1), (x2, y2), (255, 8, 255), 3)
-        cv2.circle(img, (cx, cy), 15, (255, 0, 255), cv2.FILLED)
-        
-        length = math.hypot(x2 - x1, y2 - y1)
-        # print(length)
-        
-        # Hand range 50 - 300 
-        # Volume Range -65 - 0
+            # Hand range 50 - 300 
+            # Volume Range -65 - 0
         
         
-        vol = np.interp(length, [50, 300], [minVol, maxVol])
-        volBar = np.interp(length, [50, 300], [400, 150])
-        volPer = np.interp(length, [50, 300], [0, 100])
-        print(int(length),  vol)
-        volume.SetMasterVolumeLevel(vol, None)
+            vol = np.interp(length, [50, 300], [minVol, maxVol])
+            volBar = np.interp(length, [50, 300], [400, 150])
+            volPer = np.interp(length, [50, 300], [0, 100])
+            print(int(length),  vol)
+            volume.SetMasterVolumeLevel(vol, None)
         
         
-        if length<50:
-           cv2.circle(img, (cx, cy), 15, (0, 255, 0), cv2.FILLED)
+            if length<50:
+               cv2.circle(img, (cx, cy), 15, (0, 255, 0), cv2.FILLED)
            
            
     cv2.rectangle(img, (50,150), (85, 400), (255, 0, 0), 3)   
@@ -110,8 +113,3 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
-
-    
-     
-
-

@@ -38,7 +38,10 @@ class handDetector:
     
     # Method to find positions of hand landmarks
     def findPosition(self, img, handNo=0, draw=True):
-        lmList = []  # List to store landmark positions
+        xList = []
+        yList = []
+        bbox = []
+        self.lmList = []  # List to store landmark positions
         if self.result.multi_hand_landmarks:
             # Select the hand based on handNo
             myHand = self.result.multi_hand_landmarks[handNo]
@@ -47,11 +50,40 @@ class handDetector:
                 h, w, c = img.shape
                 # Calculate the pixel coordinates of the landmark
                 cx, cy = int(lm.x * w), int(lm.y * h)
-                lmList.append([id, cx, cy])  # Add the landmark to the list
+                xList.append(cx)
+                yList.append(cy)
+                self.lmList.append([id, cx, cy])  # Add the landmark to the list
                 if draw:
                     # Draw a circle at the landmark position
-                    cv2.circle(img, (cx, cy), 13, (255, 0, 255), cv2.FILLED)
-        return lmList
+                    cv2.circle(img, (cx, cy), 5, (255, 0, 255), cv2.FILLED)
+            xmin, xmax = min(xList), max(xList)
+            ymin, ymax = min(yList), max(yList)
+            bbox = xmin, ymin, xmax, ymax 
+            
+            
+            if draw: 
+                cv2.rectangle(img, (bbox[0]-20, bbox[1]-20),
+                              (bbox[2]+20, bbox[3]+20), (0, 255, 0), 2)
+                
+                      
+                    
+        return self.lmList, bbox
+    
+    
+    def  fingersup(self):
+        fingers = []
+        # Thumb 
+        if self.lmList[self.tipIds[0]][1] < self.lmList[self.tipIds[0] - 1][1]:
+            fingers.append(1)
+        else:
+            fingers.append(1)
+        # 4 fingers        
+        for id in range(1, 5):
+            if self.lmList[self.tipIds[id]][2] < self.lmList[self.tipIds[id] - 2][2]:
+                fingers.append(1)
+            else:
+                fingers.append(0)
+        return fingers            
 
 # Main function to capture video and process frames
 def main():
@@ -66,7 +98,7 @@ def main():
 
         img = detector.findHands(img)  # Detect hands in the frame
         lmList = detector.findPosition(img)  # Find positions of landmarks
-        if lmList:
+        if len(lmList) > 4:
             print(lmList[4])  # Print the position of the 5th landmark (index 4)
        
         # Calculate frames per second (FPS)
