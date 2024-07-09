@@ -83,7 +83,10 @@ class handDetector:
                 fingers.append(1)
             else:
                 fingers.append(0)
-        return fingers            
+        return fingers   
+    
+    
+    def findDistance(self, p1, p2, img, draw=True)         
 
 # Main function to capture video and process frames
 def main():
