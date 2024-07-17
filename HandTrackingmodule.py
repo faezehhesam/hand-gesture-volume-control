@@ -2,9 +2,10 @@
 import cv2
 import mediapipe as mp
 import time
+import math
 
 # Define a class for hand detection
-class handDetector:
+class handDetector():
     # Initialize the class with default parameters
     def __init__(self, mode=False, maxHands=2, detectionCon=0.5, trackCon=0.5):
         self.mode = mode  # Whether to use static image mode
@@ -20,17 +21,19 @@ class handDetector:
                                          min_tracking_confidence=self.trackCon)
         # Initialize drawing utilities
         self.mp_draw = mp.solutions.drawing_utils
+        self.tipIds = [4, 8, 12, 16, 20]
+        
         
     # Method to find hands in an image
     def findHands(self, img, draw=True):
         # Convert the image from BGR to RGB
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         # Process the RGB image to detect hands
-        self.result = self.hands.process(img_rgb)
+        self.results = self.hands.process(img_rgb)
         
         # If hands are detected, draw landmarks
-        if self.result.multi_hand_landmarks:
-            for hand_lms in self.result.multi_hand_landmarks:
+        if self.results.multi_hand_landmarks:
+            for hand_lms in self.results.multi_hand_landmarks:
                 if draw:
                     self.mp_draw.draw_landmarks(img, hand_lms, 
                                                 self.mp_hands.HAND_CONNECTIONS)
@@ -42,9 +45,9 @@ class handDetector:
         yList = []
         bbox = []
         self.lmList = []  # List to store landmark positions
-        if self.result.multi_hand_landmarks:
+        if self.results.multi_hand_landmarks:
             # Select the hand based on handNo
-            myHand = self.result.multi_hand_landmarks[handNo]
+            myHand = self.results.multi_hand_landmarks[handNo]
             for id, lm in enumerate(myHand.landmark):
                 # Get the dimensions of the image
                 h, w, c = img.shape
@@ -70,13 +73,14 @@ class handDetector:
         return self.lmList, bbox
     
     
-    def  fingersup(self):
+    def  fingersUp(self):
         fingers = []
+        tipIds = []
         # Thumb 
-        if self.lmList[self.tipIds[0]][1] < self.lmList[self.tipIds[0] - 1][1]:
+        if self.lmList[self.tipIds[0]][1] > self.lmList[self.tipIds[0] - 1][1]:
             fingers.append(1)
         else:
-            fingers.append(1)
+            fingers.append(0)
         # 4 fingers        
         for id in range(1, 5):
             if self.lmList[self.tipIds[id]][2] < self.lmList[self.tipIds[id] - 2][2]:
@@ -86,7 +90,19 @@ class handDetector:
         return fingers   
     
     
-    def findDistance(self, p1, p2, img, draw=True)         
+    def findDistance(self, p1, p2, img, draw=True):
+        x1, y1 = self.lmList[p1][1], self.lmList[p1][2]
+        x2, y2 = self.lmList[p2][1], self.lmList[p2][2]
+        cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
+        
+        if draw:
+            cv2.circle(img, (x1, y1), 15, (255, 0, 255), cv2.FILLED)
+            cv2.circle(img, (x2, y2), 15, (255, 0, 255), cv2.FILLED)
+            cv2.line(img, (x1, y1), (x2, y2), (255, 8, 255), 3)
+            cv2.circle(img, (cx, cy), 15, (255, 0, 255), cv2.FILLED)
+        
+        length = math.hypot(x2 - x1, y2 - y1) 
+        return length, img, [x1, y1, x2, y2, cx, cy]       
 
 # Main function to capture video and process frames
 def main():

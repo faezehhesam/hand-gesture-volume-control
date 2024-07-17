@@ -50,7 +50,7 @@ while True:
         
         
         # convert volume 
-        # recuce resolution to make it snoother
+        # reduce resolution to make it smoother
         # check fingers up
         # if pinky is down set volume 
         # drawings 
