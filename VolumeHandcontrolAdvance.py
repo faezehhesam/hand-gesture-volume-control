@@ -63,8 +63,8 @@ while True:
             # print(length)
             
             # convert volume 
-            volBar = np.interp(length, [50, 300], [400, 150])
-            volPer = np.interp(length, [50, 300], [0, 100])
+            volBar = np.interp(length, [50, 200], [400, 150])
+            volPer = np.interp(length, [50, 200], [0, 100])
             # print(int(length),  vol)
             
             volume.SetMasterVolumeLevel(vol, None)
